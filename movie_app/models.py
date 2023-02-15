@@ -23,4 +23,4 @@ class Review(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.movie.title} - {self.text[:50]}..."
+        return f"{self.movie.name} - {self.text[:50]}..."
