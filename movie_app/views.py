@@ -19,7 +19,7 @@ def director_detail_api_view(request, id):
     except Director.DoesNotExist:
         return Response(data={'detail': 'director not found!'},
                         status=status.HTTP_404_NOT_FOUND)
-    serializer = DirectorSerializer(director, many=True)
+    serializer = DirectorSerializer(director, many=False)
     return Response(data=serializer.data)
 
 
@@ -37,7 +37,7 @@ def movie_detail_api_view(request, id):
     except Movie.DoesNotExist:
         return Response(data={'detail': 'movie not found!'},
                         status=status.HTTP_404_NOT_FOUND)
-    serializer = MovieSerializer(movie, many=True)
+    serializer = MovieSerializer(movie, many=False)
     return Response(data=serializer.data)
 
 
@@ -55,6 +55,6 @@ def review_detail_api_view(request, id):
     except Review.DoesNotExist:
         return Response(data={'detail': 'review not found!'},
                         status=status.HTTP_404_NOT_FOUND)
-    serializer = ReviewSerializer(review, many=True)
+    serializer = ReviewSerializer(review, many=False)
     return Response(data=serializer.data)
 
