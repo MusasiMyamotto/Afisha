@@ -2,7 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Director, Movie, Review
-from .serializers import DirectorSerializer, MovieSerializer, ReviewSerializer, MovieReviewSerializer
+from .serializers import DirectorSerializer, MovieSerializer, ReviewSerializer, MovieReviewSerializer,\
+    MovieValidatorsCreate, MovieDetailValidatorCreate, DirectorValidatorCreate, ReviewValidatorCreate
 
 
 @api_view(['GET', 'POST'])
@@ -13,7 +14,10 @@ def director_list_api_view(request):
         serializer = DirectorSerializer(directors, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
     else:
-        director = Director.objects.create(**request.data)
+        serializer = DirectorValidatorCreate(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        director = Director.objects.create(**serializer.validated_data)
         director.save()
         return Response(data=DirectorSerializer(director).data)
 
@@ -31,7 +35,10 @@ def director_detail_api_view(request, **kwargs):
         director.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     else:
-        director.name = request.data.get("name")
+        serializer = DirectorValidatorCreate(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        director.name = serializer.validated_data.get("name")
         director.save()
         return Response(data={'message': 'data received!',
                               'movie': DirectorSerializer(director).data})
@@ -44,8 +51,10 @@ def movie_list_api_view(request):
         serializer = MovieSerializer(movies, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
     else:
-        movie = Movie.objects.create(**request.data)
-        print(movie)
+        serializer = MovieValidatorsCreate(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        movie = Movie.objects.create(**serializer.validated_data)
         movie.save()
         return Response(data=MovieSerializer(movie).data)
 
@@ -63,10 +72,9 @@ def movie_detail_api_view(request, **kwargs):
         movie.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     else:
-        movie.title = request.data.get("title")
-        movie.description = request.data.get("description")
-        movie.duration = request.data.get("duration")
-        movie.director_id = request.data.get("director_id")
+        serializer = MovieDetailValidatorCreate(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         movie.save()
         return Response(data={'message': 'data received!',
                               'movie': MovieSerializer(movie).data})
@@ -79,7 +87,10 @@ def review_list_api_view(request):
         serializer = ReviewSerializer(reviews, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
     else:
-        review = Review.objects.create(**request.data)
+        serializer = ReviewValidatorCreate(data=request.data)
+        if not serializer.is_valid():
+            return Response(data={'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        review = Review.objects.create(**serializer.validated_data)
         review.save()
         return Response(data=ReviewSerializer(review).data)
 
@@ -97,11 +108,13 @@ def review_detail_api_view(request, **kwargs):
         review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     else:
-        review.text = request.data.get("text")
-        review.movie_id = request.data.get("movie_id")
+        serializer = ReviewValidatorCreate(data=request.data)
+        serializer.is_valid(raise_exception=1)
+        review.text = serializer.validated_data.get("text")
+        review.movie_id = serializer.validated_data.get("movie_id")
         review.save()
         return Response(data={'message': 'data received!',
-                              'movie': ReviewSerializer(review).data})
+                              'review': ReviewSerializer(review).data})
 
 
 @api_view(["GET"])
