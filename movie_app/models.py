@@ -22,7 +22,7 @@ class Movie(models.Model):
         return self.name
 
     def filtered_reviews(self):
-        return self.movie_reviews.filter(stars__gte=4)
+        return self.movie_reviews.filter(stars__gt=3)
 
     @property
     def rating(self):
@@ -36,13 +36,7 @@ class Movie(models.Model):
 class Review(models.Model):
     text = models.TextField()
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, null=True, related_name='movie_reviews')
-    stars = models.IntegerField(choices=(
-        (1, '*'),
-        (2, '* *'),
-        (3, '* * *'),
-        (4, '* * * *'),
-        (5, '* * * * *'),
-    ), default=5)
+    stars = models.IntegerField(choices=([i, i * '*'] for i in range(1, 6)), default=1)
 
     def __str__(self):
         return f"{self.movie.name} - {self.text[:50]}..."
