@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from .serializers import *
 from rest_framework import status
-from django.views.decorators.csrf import csrf_exempt
 
 
 @api_view(['POST'])
@@ -20,7 +19,6 @@ def registration_api_view(request):
     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
 @api_view(['POST'])
 def confirm_user_api_view(request):
     code = request.data.get('code', None)
