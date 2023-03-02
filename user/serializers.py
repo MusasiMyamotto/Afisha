@@ -1,29 +1,38 @@
+from django.contrib.auth import authenticate
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from rest_framework.exceptions import ValidationError
+from .models import User, UserConfirmation
 
 
-class ConfirmationSerializer(serializers.Serializer):
-    confirmation_code = serializers.CharField(max_length=6)
-
-    def validate_confirmation_code(self, value):
-        user = self.context.get('user')
-        if not user.profile.confirmation_code == value:
-            raise serializers.ValidationError('Invalid confirmation code')
-        user.profile.is_active = True
-        user.profile.save()
-        return value
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
 
 
-class UserValidateSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
+class UserRegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
 
 
-class UserCreateSerializer(UserValidateSerializer):
-    def validate_username(self, username):
-        try:
-            User.objects.get(username=username)
-        except User.DoesNotExist:
-            return username
-        raise ValidationError('User with this username already exists!')
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=128, write_only=True)
+
+    def validate(self, data):
+        user = authenticate(**data)
+        if user and user.is_active:
+            return user
+        raise serializers.ValidationError('Incorrect credentials.')
+
+
+class UserConfirmationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserConfirmation
+        fields = ['code']
+
