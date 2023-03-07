@@ -35,4 +35,3 @@ class UserConfirmationSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserConfirmation
         fields = ['code']
-
